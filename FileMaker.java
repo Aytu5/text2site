@@ -1,7 +1,8 @@
 package text2site;
 
 import java.io.*;
-import java.util.Scanner;
+import java.util.regex.Pattern;
+import java.util.*;
 
 public class FileMaker{
 
@@ -10,13 +11,17 @@ public class FileMaker{
     private File output;
 
     public FileMaker(){
-
+        this("out");
     }
 
     public FileMaker(String title){
-        this.head = new File("initial.html");
-        this.foot = new File("final.html");
-        this.output = new File(title + ".html");
+        this(title, "initial", "final");
+    }
+
+    public FileMaker(String title, String head, String foot){
+        this.head = new File(head + ".html");
+        this.foot = new File(foot + ".html");
+        this.output = new File(title);
     }
 
     /**
@@ -29,6 +34,7 @@ public class FileMaker{
 
         String input = text;
         String output = new String();
+        LinkedList<String> stack = new LinkedList<>();
 
         for(int i = 0; i < input.length(); i++){
             char currentChar = input.charAt(i);
@@ -59,32 +65,21 @@ public class FileMaker{
         FileReader headReader = new FileReader(this.head);
         FileReader footReader = new FileReader(this.foot);
 
-        System.out.println("Starting to copy head");
-
         int current = headReader.read();
         while(current != -1){
-            writer.print((char)current);
+            writer.print(current < 255 && current > 31 ? (char)current : '*');
             current = headReader.read();
         }
-
-        System.out.println("Finished copying head");
-        System.out.println("Starting to parse the text field");
-
         headReader.close();
-        writer.print("\n");
-        writer.print(parse(text));
-        writer.print("\n");
 
-        System.out.println("Starting to copy foot");
+        writer.print("\n" + parse(text) + "\n");
 
         current = footReader.read();
         while(current != -1){
-            writer.print((char)current);
+            writer.print(current < 255 && current > 31 ? (char)current : '*');
             current = footReader.read();
         }
         footReader.close();
-
-        System.out.println("Finished copying foot");
 
         writer.flush();
         writer.close();
